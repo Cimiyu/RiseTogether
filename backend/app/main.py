@@ -2,7 +2,7 @@ from fastapi import FastAPI
 
 from app.database import engine
 from app import models
-from app.routes import users, posts, comments, likes
+from app.routes import users, posts, comments, likes, follows
 
 app = FastAPI(
     title="RiseTogether API",
@@ -18,6 +18,7 @@ app.include_router(users.router)
 app.include_router(posts.router)
 app.include_router(comments.router)
 app.include_router(likes.router)
+app.include_router(follows.router)
 
 
 @app.get("/")

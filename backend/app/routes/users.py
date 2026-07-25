@@ -17,6 +17,10 @@ router = APIRouter(
 )
 
 
+# -------------------------
+# REGISTER
+# -------------------------
+
 @router.post("/register", response_model=schemas.UserResponse)
 def register_user(
     user: schemas.UserCreate,
@@ -47,6 +51,10 @@ def register_user(
 
     return new_user
 
+
+# -------------------------
+# LOGIN
+# -------------------------
 
 @router.post("/login")
 def login(
@@ -84,6 +92,10 @@ def login(
     }
 
 
+# -------------------------
+# GET CURRENT USER
+# -------------------------
+
 @router.get("/me", response_model=schemas.UserResponse)
 def get_me(
     current_user: models.User = Depends(get_current_user)
@@ -91,13 +103,19 @@ def get_me(
     return current_user
 
 
+# -------------------------
+# UPDATE CURRENT USER
+# -------------------------
+
 @router.put("/me", response_model=schemas.UserResponse)
 def update_me(
     user_update: schemas.UserUpdate,
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    update_data = user_update.model_dump(exclude_unset=True)
+    update_data = user_update.model_dump(
+        exclude_unset=True
+    )
 
     for field, value in update_data.items():
         setattr(current_user, field, value)
@@ -106,3 +124,27 @@ def update_me(
     db.refresh(current_user)
 
     return current_user
+
+
+# -------------------------
+# GET USER BY ID
+# -------------------------
+
+@router.get("/{user_id}", response_model=schemas.UserResponse)
+def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    user = (
+        db.query(models.User)
+        .filter(models.User.id == user_id)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found."
+        )
+
+    return user
