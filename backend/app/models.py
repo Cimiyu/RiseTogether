@@ -56,6 +56,12 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    likes = relationship(
+        "Like",
+        back_populates="owner",
+        cascade="all, delete-orphan"
+    )
+
 
 # -------------------------
 # POST MODEL
@@ -88,6 +94,12 @@ class Post(Base):
 
     comments = relationship(
         "Comment",
+        back_populates="post",
+        cascade="all, delete-orphan"
+    )
+
+    likes = relationship(
+        "Like",
         back_populates="post",
         cascade="all, delete-orphan"
     )
@@ -129,4 +141,41 @@ class Comment(Base):
     post = relationship(
         "Post",
         back_populates="comments"
+    )
+
+
+# -------------------------
+# LIKE MODEL
+# -------------------------
+
+class Like(Base):
+    __tablename__ = "likes"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    owner_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    post_id = Column(
+        Integer,
+        ForeignKey("posts.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    owner = relationship(
+        "User",
+        back_populates="likes"
+    )
+
+    post = relationship(
+        "Post",
+        back_populates="likes"
     )

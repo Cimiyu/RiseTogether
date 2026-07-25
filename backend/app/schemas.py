@@ -79,3 +79,19 @@ class CommentResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+        # -------------------------
+# LIKE SCHEMAS
+# -------------------------
+
+class LikeCreate(BaseModel):
+    post_id: int
+
+
+class LikeResponse(BaseModel):
+    id: int
+    owner_id: int
+    post_id: int
+
+    class Config:
+        from_attributes = True
