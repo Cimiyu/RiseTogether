@@ -111,3 +111,18 @@ class FollowResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+        # -------------------------
+# NOTIFICATION SCHEMAS
+# -------------------------
+
+class NotificationResponse(BaseModel):
+    id: int
+    user_id: int
+    sender_id: Optional[int] = None
+    notification_type: str
+    message: str
+    is_read: bool
+
+    class Config:
+        from_attributes = True

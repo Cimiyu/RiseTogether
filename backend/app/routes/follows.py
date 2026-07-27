@@ -60,12 +60,29 @@ def follow_user(
             detail="You already follow this user."
         )
 
+    # Create follow
     new_follow = models.Follow(
         follower_id=current_user.id,
         following_id=user_id
     )
 
     db.add(new_follow)
+    db.flush()
+
+    # Create notification
+    notification = models.Notification(
+        user_id=user_id,
+        sender_id=current_user.id,
+        notification_type="follow",
+        message=(
+            f"{current_user.first_name} "
+            f"{current_user.last_name} started following you."
+        ),
+        is_read=False
+    )
+
+    db.add(notification)
+
     db.commit()
     db.refresh(new_follow)
 
@@ -131,7 +148,9 @@ def get_followers(
 
     followers = (
         db.query(models.Follow)
-        .filter(models.Follow.following_id == user_id)
+        .filter(
+            models.Follow.following_id == user_id
+        )
         .all()
     )
 
@@ -164,7 +183,9 @@ def get_following(
 
     following = (
         db.query(models.Follow)
-        .filter(models.Follow.follower_id == user_id)
+        .filter(
+            models.Follow.follower_id == user_id
+        )
         .all()
     )
 

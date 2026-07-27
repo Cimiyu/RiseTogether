@@ -5,6 +5,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Text,
+    Boolean,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -22,21 +23,21 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     first_name = Column(String, nullable=False)
-
     last_name = Column(String, nullable=False)
 
-    email = Column(String, unique=True, index=True, nullable=False)
+    email = Column(
+        String,
+        unique=True,
+        index=True,
+        nullable=False
+    )
 
     hashed_password = Column(String, nullable=False)
 
     profile_picture = Column(String, nullable=True)
-
     bio = Column(Text, nullable=True)
-
     university = Column(String, nullable=True)
-
     course = Column(String, nullable=True)
-
     year_of_study = Column(String, nullable=True)
 
     created_at = Column(
@@ -73,6 +74,13 @@ class User(Base):
         "Follow",
         foreign_keys="Follow.follower_id",
         back_populates="follower",
+        cascade="all, delete-orphan"
+    )
+
+    notifications = relationship(
+        "Notification",
+        foreign_keys="Notification.user_id",
+        back_populates="user",
         cascade="all, delete-orphan"
     )
 
@@ -231,4 +239,58 @@ class Follow(Base):
         "User",
         foreign_keys=[following_id],
         back_populates="followers"
+    )
+
+
+# -------------------------
+# NOTIFICATION MODEL
+# -------------------------
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    sender_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=True
+    )
+
+    notification_type = Column(
+        String,
+        nullable=False
+    )
+
+    message = Column(
+        Text,
+        nullable=False
+    )
+
+    is_read = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    user = relationship(
+        "User",
+        foreign_keys=[user_id],
+        back_populates="notifications"
+    )
+
+    sender = relationship(
+        "User",
+        foreign_keys=[sender_id]
     )

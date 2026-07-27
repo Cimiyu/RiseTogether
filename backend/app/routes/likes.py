@@ -11,15 +11,22 @@ router = APIRouter(
 )
 
 
-@router.post("/{post_id}", response_model=schemas.LikeResponse)
+# -------------------------
+# LIKE POST
+# -------------------------
+
+@router.post("/{post_id}")
 def like_post(
     post_id: int,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    post = db.query(models.Post).filter(
-        models.Post.id == post_id
-    ).first()
+    # Check that post exists
+    post = (
+        db.query(models.Post)
+        .filter(models.Post.id == post_id)
+        .first()
+    )
 
     if not post:
         raise HTTPException(
@@ -27,10 +34,22 @@ def like_post(
             detail="Post not found."
         )
 
-    existing_like = db.query(models.Like).filter(
-        models.Like.owner_id == current_user.id,
-        models.Like.post_id == post_id
-    ).first()
+    # Prevent liking your own post
+    if post.owner_id == current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot like your own post."
+        )
+
+    # Prevent duplicate likes
+    existing_like = (
+        db.query(models.Like)
+        .filter(
+            models.Like.owner_id == current_user.id,
+            models.Like.post_id == post_id
+        )
+        .first()
+    )
 
     if existing_like:
         raise HTTPException(
@@ -38,17 +57,41 @@ def like_post(
             detail="You already liked this post."
         )
 
-    like = models.Like(
+    # Create like
+    new_like = models.Like(
         owner_id=current_user.id,
         post_id=post_id
     )
 
-    db.add(like)
+    db.add(new_like)
+    db.flush()
+
+    # Create notification for post owner
+    notification = models.Notification(
+        user_id=post.owner_id,
+        sender_id=current_user.id,
+        notification_type="like",
+        message=(
+            f"{current_user.first_name} "
+            f"{current_user.last_name} liked your post."
+        ),
+        is_read=False
+    )
+
+    db.add(notification)
+
     db.commit()
-    db.refresh(like)
+    db.refresh(new_like)
 
-    return like
+    return {
+        "message": "Post liked successfully.",
+        "like_id": new_like.id
+    }
 
+
+# -------------------------
+# UNLIKE POST
+# -------------------------
 
 @router.delete("/{post_id}")
 def unlike_post(
@@ -56,15 +99,19 @@ def unlike_post(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    like = db.query(models.Like).filter(
-        models.Like.owner_id == current_user.id,
-        models.Like.post_id == post_id
-    ).first()
+    like = (
+        db.query(models.Like)
+        .filter(
+            models.Like.owner_id == current_user.id,
+            models.Like.post_id == post_id
+        )
+        .first()
+    )
 
     if not like:
         raise HTTPException(
             status_code=404,
-            detail="Like not found."
+            detail="You have not liked this post."
         )
 
     db.delete(like)
@@ -75,16 +122,34 @@ def unlike_post(
     }
 
 
-@router.get("/{post_id}")
+# -------------------------
+# GET POST LIKES
+# -------------------------
+
+@router.get(
+    "/post/{post_id}",
+    response_model=list[schemas.LikeResponse]
+)
 def get_post_likes(
     post_id: int,
     db: Session = Depends(get_db),
 ):
-    likes = db.query(models.Like).filter(
-        models.Like.post_id == post_id
-    ).count()
+    post = (
+        db.query(models.Post)
+        .filter(models.Post.id == post_id)
+        .first()
+    )
 
-    return {
-        "post_id": post_id,
-        "likes": likes
-    }
+    if not post:
+        raise HTTPException(
+            status_code=404,
+            detail="Post not found."
+        )
+
+    likes = (
+        db.query(models.Like)
+        .filter(models.Like.post_id == post_id)
+        .all()
+    )
+
+    return likes

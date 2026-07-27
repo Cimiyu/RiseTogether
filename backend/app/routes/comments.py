@@ -11,17 +11,21 @@ router = APIRouter(
 )
 
 
-# ----------------------------------
+# -------------------------
 # CREATE COMMENT
-# ----------------------------------
+# -------------------------
 
-@router.post("/posts/{post_id}", response_model=schemas.CommentResponse)
+@router.post(
+    "/posts/{post_id}",
+    response_model=schemas.CommentResponse
+)
 def create_comment(
     post_id: int,
     comment: schemas.CommentCreate,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
+    # Check that post exists
     post = (
         db.query(models.Post)
         .filter(models.Post.id == post_id)
@@ -34,6 +38,7 @@ def create_comment(
             detail="Post not found."
         )
 
+    # Create comment
     new_comment = models.Comment(
         content=comment.content,
         owner_id=current_user.id,
@@ -41,17 +46,38 @@ def create_comment(
     )
 
     db.add(new_comment)
+    db.flush()
+
+    # Create notification for post owner
+    # Don't notify someone when they comment on their own post.
+    if post.owner_id != current_user.id:
+        notification = models.Notification(
+            user_id=post.owner_id,
+            sender_id=current_user.id,
+            notification_type="comment",
+            message=(
+                f"{current_user.first_name} "
+                f"{current_user.last_name} commented on your post."
+            ),
+            is_read=False
+        )
+
+        db.add(notification)
+
     db.commit()
     db.refresh(new_comment)
 
     return new_comment
 
 
-# ----------------------------------
-# GET COMMENTS FOR A POST
-# ----------------------------------
+# -------------------------
+# GET COMMENTS
+# -------------------------
 
-@router.get("/posts/{post_id}", response_model=list[schemas.CommentResponse])
+@router.get(
+    "/posts/{post_id}",
+    response_model=list[schemas.CommentResponse]
+)
 def get_comments(
     post_id: int,
     db: Session = Depends(get_db),
@@ -78,11 +104,14 @@ def get_comments(
     return comments
 
 
-# ----------------------------------
+# -------------------------
 # UPDATE COMMENT
-# ----------------------------------
+# -------------------------
 
-@router.put("/{comment_id}", response_model=schemas.CommentResponse)
+@router.put(
+    "/{comment_id}",
+    response_model=schemas.CommentResponse
+)
 def update_comment(
     comment_id: int,
     comment_update: schemas.CommentCreate,
@@ -115,9 +144,9 @@ def update_comment(
     return comment
 
 
-# ----------------------------------
+# -------------------------
 # DELETE COMMENT
-# ----------------------------------
+# -------------------------
 
 @router.delete("/{comment_id}")
 def delete_comment(
