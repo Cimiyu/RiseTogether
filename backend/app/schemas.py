@@ -126,3 +126,22 @@ class NotificationResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+        # -------------------------
+# MESSAGE SCHEMAS
+# -------------------------
+
+class MessageCreate(BaseModel):
+    receiver_id: int
+    content: str
+
+
+class MessageResponse(BaseModel):
+    id: int
+    sender_id: int
+    receiver_id: int
+    content: str
+    is_read: bool
+
+    class Config:
+        from_attributes = True

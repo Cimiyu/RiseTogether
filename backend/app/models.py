@@ -84,6 +84,18 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    sent_messages = relationship(
+        "Message",
+        foreign_keys="Message.sender_id",
+        cascade="all, delete-orphan"
+    )
+
+    received_messages = relationship(
+        "Message",
+        foreign_keys="Message.receiver_id",
+        cascade="all, delete-orphan"
+    )
+
 
 # -------------------------
 # POST MODEL
@@ -293,4 +305,52 @@ class Notification(Base):
     sender = relationship(
         "User",
         foreign_keys=[sender_id]
+    )
+
+
+# -------------------------
+# MESSAGE MODEL
+# -------------------------
+
+class Message(Base):
+    __tablename__ = "messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    sender_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    receiver_id = Column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False
+    )
+
+    content = Column(
+        Text,
+        nullable=False
+    )
+
+    is_read = Column(
+        Boolean,
+        default=False,
+        nullable=False
+    )
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    sender = relationship(
+        "User",
+        foreign_keys=[sender_id]
+    )
+
+    receiver = relationship(
+        "User",
+        foreign_keys=[receiver_id]
     )

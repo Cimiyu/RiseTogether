@@ -9,6 +9,7 @@ from app.routes import (
     likes,
     follows,
     notifications,
+    messages,
 )
 
 app = FastAPI(
@@ -27,6 +28,7 @@ app.include_router(comments.router)
 app.include_router(likes.router)
 app.include_router(follows.router)
 app.include_router(notifications.router)
+app.include_router(messages.router)
 
 
 @app.get("/")
