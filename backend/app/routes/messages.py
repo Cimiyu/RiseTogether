@@ -222,3 +222,76 @@ def delete_message(
     return {
         "message": "Message deleted successfully."
     }
+
+# -------------------------
+# GET CONVERSATIONS
+# -------------------------
+
+@router.get(
+    "/conversations",
+    response_model=list[schemas.ConversationResponse]
+)
+def get_conversations(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    messages = (
+        db.query(models.Message)
+        .filter(
+            or_(
+                models.Message.sender_id == current_user.id,
+                models.Message.receiver_id == current_user.id
+            )
+        )
+        .order_by(models.Message.created_at.desc())
+        .all()
+    )
+
+    conversations = {}
+
+    for message in messages:
+
+        # Determine the other participant
+        if message.sender_id == current_user.id:
+            other_user = (
+                db.query(models.User)
+                .filter(models.User.id == message.receiver_id)
+                .first()
+            )
+        else:
+            other_user = (
+                db.query(models.User)
+                .filter(models.User.id == message.sender_id)
+                .first()
+            )
+
+        if not other_user:
+            continue
+
+        # Skip if we've already added this conversation
+        if other_user.id in conversations:
+            continue
+
+        unread_count = (
+            db.query(models.Message)
+            .filter(
+                models.Message.sender_id == other_user.id,
+                models.Message.receiver_id == current_user.id,
+                models.Message.is_read == False
+            )
+            .count()
+        )
+
+        conversations[other_user.id] = {
+            "user": {
+                "id": other_user.id,
+                "first_name": other_user.first_name,
+                "last_name": other_user.last_name,
+                "profile_picture": other_user.profile_picture,
+            },
+            "last_message": message.content,
+            "last_message_time": message.created_at,
+            "unread_count": unread_count,
+        }
+
+    return list(conversations.values())

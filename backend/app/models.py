@@ -84,17 +84,19 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
-    sent_messages = relationship(
-        "Message",
-        foreign_keys="Message.sender_id",
-        cascade="all, delete-orphan"
-    )
+sent_messages = relationship(
+    "Message",
+    foreign_keys="Message.sender_id",
+    back_populates="sender",
+    cascade="all, delete-orphan"
+)
 
-    received_messages = relationship(
-        "Message",
-        foreign_keys="Message.receiver_id",
-        cascade="all, delete-orphan"
-    )
+received_messages = relationship(
+    "Message",
+    foreign_keys="Message.receiver_id",
+    back_populates="receiver",
+    cascade="all, delete-orphan"
+)
 
 
 # -------------------------
@@ -307,7 +309,6 @@ class Notification(Base):
         foreign_keys=[sender_id]
     )
 
-
 # -------------------------
 # MESSAGE MODEL
 # -------------------------
@@ -347,10 +348,12 @@ class Message(Base):
 
     sender = relationship(
         "User",
-        foreign_keys=[sender_id]
+        foreign_keys=[sender_id],
+        back_populates="sent_messages"
     )
 
     receiver = relationship(
         "User",
-        foreign_keys=[receiver_id]
+        foreign_keys=[receiver_id],
+        back_populates="received_messages"
     )

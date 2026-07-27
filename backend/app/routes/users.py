@@ -148,3 +148,66 @@ def get_user(
         )
 
     return user
+@router.get(
+    "/{user_id}",
+    response_model=schemas.PublicProfileResponse
+)
+def get_user_profile(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    user = (
+        db.query(models.User)
+        .filter(models.User.id == user_id)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found."
+        )
+
+    return {
+        "id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email": user.email,
+        "bio": user.bio,
+        "university": user.university,
+        "course": user.course,
+        "year_of_study": user.year_of_study,
+        "profile_picture": user.profile_picture,
+        "posts_count": len(user.posts),
+        "followers_count": len(user.followers),
+        "following_count": len(user.following),
+        "created_at": user.created_at,
+    }
+@router.get(
+    "/{user_id}/posts",
+    response_model=list[schemas.PostResponse]
+)
+def get_user_posts(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    user = (
+        db.query(models.User)
+        .filter(models.User.id == user_id)
+        .first()
+    )
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found."
+        )
+
+    posts = (
+        db.query(models.Post)
+        .filter(models.Post.owner_id == user_id)
+        .order_by(models.Post.created_at.desc())
+        .all()
+    )
+
+    return posts
