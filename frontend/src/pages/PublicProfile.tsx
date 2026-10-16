@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import MainLayout from "../layout/MainLayout";
+import { API_BASE_URL } from "../api/config";
 
 interface Profile {
   id: number;
@@ -186,7 +187,7 @@ function PublicProfile() {
     currentUserId === profile.id;
 
   const profileImage = profile.profile_picture
-    ? `http://127.0.0.1:8000${profile.profile_picture}`
+    ? `${API_BASE_URL}${profile.profile_picture}`
     : `https://ui-avatars.com/api/?name=${encodeURIComponent(
         `${profile.first_name} ${profile.last_name}`
       )}&background=dc2626&color=ffffff&size=200`;
@@ -415,7 +416,7 @@ function PublicProfile() {
                   {post.image_url && (
 
                     <img
-                      src={`http://127.0.0.1:8000${post.image_url}`}
+                      src={`${API_BASE_URL}${post.image_url}`}
                       alt="Post"
                       className="w-full max-h-[500px] object-cover"
                     />

@@ -12,6 +12,7 @@ import {
 
 import api from "../api/axios";
 import MainLayout from "../layout/MainLayout";
+import { API_BASE_URL } from "../api/config";
 
 // =====================================================
 // TYPES
@@ -354,49 +355,21 @@ function Chat() {
   // WEBSOCKET URL
   // =====================================================
 
-  const getWebSocketUrl =
-    useCallback(
-      (token: string): string => {
-        /*
-         * Browser:
-         * http://localhost:5173
-         *
-         * Backend:
-         * http://localhost:8000
-         *
-         * WebSocket:
-         * ws://localhost:8000/chat/ws
-         */
+  const getWebSocketUrl = useCallback(
+    (token: string): string => {
+      const apiUrl = API_BASE_URL;
 
-        const protocol =
-          window.location.protocol ===
-          "https:"
-            ? "wss:"
-            : "ws:";
+      const websocketUrl = apiUrl
+        .replace(/^https:/, "wss:")
+        .replace(/^http:/, "ws:");
 
-        /*
-         * If frontend is opened using localhost,
-         * use localhost for backend.
-         *
-         * If frontend is opened using 127.0.0.1,
-         * use 127.0.0.1 for backend.
-         */
-
-        const hostname =
-          window.location.hostname;
-
-        const backendHost =
-          hostname === "localhost"
-            ? "localhost"
-            : "127.0.0.1";
-
-        return (
-          `${protocol}//${backendHost}:8000/chat/ws` +
-          `?token=${encodeURIComponent(token)}`
-        );
-      },
-      []
-    );
+      return (
+        `${websocketUrl}/chat/ws` +
+        `?token=${encodeURIComponent(token)}`
+      );
+    },
+    []
+  );
 
   // =====================================================
   // HANDLE WEBSOCKET DATA
@@ -1426,10 +1399,7 @@ function Chat() {
         return user.profile_picture;
       }
 
-      return (
-        `http://127.0.0.1:8000` +
-        `${user.profile_picture}`
-      );
+      return `${API_BASE_URL}${user.profile_picture.startsWith("/") ? "" : "/"}${user.profile_picture}`;
     }
 
     return (

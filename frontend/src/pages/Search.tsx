@@ -3,6 +3,7 @@ import { useSearchParams, Link } from "react-router-dom";
 
 import api from "../api/axios";
 import MainLayout from "../layout/MainLayout";
+import { API_BASE_URL } from "../api/config";
 
 interface UserResult {
   id: number;
@@ -129,7 +130,7 @@ function Search() {
 
   function getProfileImage(user: UserResult) {
     if (user.profile_picture) {
-      return `http://127.0.0.1:8000${user.profile_picture}`;
+      return `${API_BASE_URL}${user.profile_picture}`;
     }
 
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -150,7 +151,7 @@ function Search() {
       return imageUrl;
     }
 
-    return `http://127.0.0.1:8000${imageUrl}`;
+    return `${API_BASE_URL}${imageUrl}`;
   }
 
   return (

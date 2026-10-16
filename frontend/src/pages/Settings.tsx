@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import api from "../api/axios";
 import MainLayout from "../layout/MainLayout";
+import { API_BASE_URL } from "../api/config";
 
 interface UserProfile {
   id: number;
@@ -59,7 +60,7 @@ function Settings() {
   // BACKEND URL
   // =====================================================
 
-  const API_URL = "http://127.0.0.1:8000";
+  const API_URL = API_BASE_URL;
 
   // =====================================================
   // LOAD PROFILE

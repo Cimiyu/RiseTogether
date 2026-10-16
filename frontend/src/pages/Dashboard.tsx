@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 import MainLayout from "../layout/MainLayout";
 import Comments from "../components/Comments";
+import { API_BASE_URL } from "../api/config";
 
 interface Post {
   id: number;
@@ -743,11 +744,6 @@ function Dashboard() {
 
             {posts.map((post) => {
 
-              const friendStatus =
-                friendStatuses[
-                  post.owner.id
-                ];
-
               return (
                 <div
                   key={post.id}
@@ -764,7 +760,7 @@ function Dashboard() {
                       src={
                         post.owner
                           .profile_picture
-                          ? `http://127.0.0.1:8000${post.owner.profile_picture}`
+                          ? `${API_BASE_URL}${post.owner.profile_picture}`
                           : `https://ui-avatars.com/api/?name=${encodeURIComponent(
                               `${post.owner.first_name} ${post.owner.last_name}`
                             )}&background=dc2626&color=ffffff`
@@ -910,7 +906,7 @@ function Dashboard() {
 
                   {post.image_url && (
                     <img
-                      src={`http://127.0.0.1:8000${post.image_url}`}
+                      src={`${API_BASE_URL}${post.image_url}`} 
                       alt="Post"
                       className="w-full max-h-[500px] object-cover"
                     />

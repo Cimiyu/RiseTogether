@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import MainLayout from "../layout/MainLayout";
+import { API_BASE_URL } from "../api/config";
 
 interface FriendRequest {
   request_id: number;
@@ -126,7 +127,7 @@ function FriendRequests() {
     request: FriendRequest
   ) {
     if (request.profile_picture) {
-      return `http://127.0.0.1:8000${request.profile_picture}`;
+      return `${API_BASE_URL}${request.profile_picture}`;
     }
 
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(
