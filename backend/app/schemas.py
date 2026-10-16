@@ -4,9 +4,9 @@ from typing import Optional
 from pydantic import BaseModel, EmailStr
 
 
-# -------------------------
+# =====================================================
 # USER SCHEMAS
-# -------------------------
+# =====================================================
 
 class UserCreate(BaseModel):
     first_name: str
@@ -46,84 +46,43 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
-# -------------------------
+# =====================================================
 # POST SCHEMAS
-# -------------------------
+# =====================================================
 
 class PostCreate(BaseModel):
     content: str
-    image_url: Optional[str] = None
+
+
+class PostOwner(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    profile_picture: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 
 class PostResponse(BaseModel):
     id: int
     content: str
     image_url: Optional[str] = None
-    owner_id: int
     created_at: datetime
+
+    owner: PostOwner
+
+    likes_count: int = 0
+    comments_count: int = 0
+    liked: bool = False
 
     class Config:
         from_attributes = True
 
 
-# -------------------------
-# COMMENT SCHEMAS
-# -------------------------
-
-class CommentCreate(BaseModel):
-    content: str
-
-
-class CommentResponse(BaseModel):
-    id: int
-    content: str
-    owner_id: int
-    post_id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# -------------------------
-# LIKE SCHEMAS
-# -------------------------
-
-class LikeCreate(BaseModel):
-    post_id: int
-
-
-class LikeResponse(BaseModel):
-    id: int
-    owner_id: int
-    post_id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# -------------------------
-# FOLLOW SCHEMAS
-# -------------------------
-
-class FollowCreate(BaseModel):
-    following_id: int
-
-
-class FollowResponse(BaseModel):
-    id: int
-    follower_id: int
-    following_id: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-# -------------------------
+# =====================================================
 # NOTIFICATION SCHEMAS
-# -------------------------
+# =====================================================
 
 class NotificationResponse(BaseModel):
     id: int
@@ -138,9 +97,9 @@ class NotificationResponse(BaseModel):
         from_attributes = True
 
 
-# -------------------------
+# =====================================================
 # MESSAGE SCHEMAS
-# -------------------------
+# =====================================================
 
 class MessageCreate(BaseModel):
     receiver_id: int
@@ -159,46 +118,9 @@ class MessageResponse(BaseModel):
         from_attributes = True
 
 
-# -------------------------
+# =====================================================
 # FEED SCHEMAS
-# -------------------------
-
-class FeedResponse(BaseModel):
-    page: int
-    limit: int
-    total_posts: int
-    posts: list[PostResponse]
-
-    class Config:
-        from_attributes = True
-
-        # -------------------------
-# PUBLIC PROFILE SCHEMAS
-# -------------------------
-
-class PublicProfileResponse(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-    email: EmailStr
-    bio: Optional[str] = None
-    university: Optional[str] = None
-    course: Optional[str] = None
-    year_of_study: Optional[str] = None
-    profile_picture: Optional[str] = None
-
-    posts_count: int
-    followers_count: int
-    following_count: int
-
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
- # -------------------------
-# FEED POST SCHEMAS
-# -------------------------
+# =====================================================
 
 class FeedOwner(BaseModel):
     id: int
@@ -222,10 +144,9 @@ class FeedPostResponse(BaseModel):
     comments_count: int
     liked: bool
 
+    class Config:
+        from_attributes = True
 
-# -------------------------
-# FEED RESPONSE
-# -------------------------
 
 class FeedResponse(BaseModel):
     page: int
@@ -237,9 +158,9 @@ class FeedResponse(BaseModel):
         from_attributes = True
 
 
-# -------------------------
+# =====================================================
 # PUBLIC PROFILE SCHEMAS
-# -------------------------
+# =====================================================
 
 class PublicProfileResponse(BaseModel):
     id: int
@@ -261,9 +182,10 @@ class PublicProfileResponse(BaseModel):
     class Config:
         from_attributes = True
 
-        # -------------------------
+
+# =====================================================
 # CONVERSATION SCHEMAS
-# -------------------------
+# =====================================================
 
 class ConversationUser(BaseModel):
     id: int
@@ -280,3 +202,60 @@ class ConversationResponse(BaseModel):
     last_message: str
     last_message_time: datetime
     unread_count: int
+
+    class Config:
+        from_attributes = True
+
+
+# =====================================================
+# COMMENT SCHEMAS
+# =====================================================
+
+class CommentCreate(BaseModel):
+    content: str
+
+
+class CommentResponse(BaseModel):
+    id: int
+    content: str
+    owner_id: int
+    post_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# =====================================================
+# LIKE SCHEMAS
+# =====================================================
+
+class LikeCreate(BaseModel):
+    post_id: int
+
+
+class LikeResponse(BaseModel):
+    id: int
+    owner_id: int
+    post_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+        # =====================================================
+# FOLLOW SCHEMAS
+# =====================================================
+
+class FollowCreate(BaseModel):
+    following_id: int
+
+
+class FollowResponse(BaseModel):
+    id: int
+    follower_id: int
+    following_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

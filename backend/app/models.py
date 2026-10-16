@@ -12,6 +12,9 @@ from sqlalchemy.sql import func
 
 from app.database import Base
 
+from datetime import datetime
+from sqlalchemy import UniqueConstraint
+
 
 # -------------------------
 # USER MODEL
@@ -41,10 +44,9 @@ class User(Base):
     year_of_study = Column(String, nullable=True)
 
     created_at = Column(
-        DateTime(timezone=True),
-        server_default=func.now()
+    DateTime,
+    server_default=func.now()
     )
-
     posts = relationship(
         "Post",
         back_populates="owner",
@@ -98,6 +100,20 @@ class User(Base):
     cascade="all, delete-orphan"
     )
 
+    sent_requests = relationship(
+    "FriendRequest",
+    foreign_keys="FriendRequest.sender_id",
+    back_populates="sender",
+    cascade="all, delete-orphan",
+    )
+
+    received_requests = relationship(
+    "FriendRequest",
+    foreign_keys="FriendRequest.receiver_id",
+    back_populates="receiver",
+    cascade="all, delete-orphan",
+    )
+
 
 # -------------------------
 # POST MODEL
@@ -106,11 +122,21 @@ class User(Base):
 class Post(Base):
     __tablename__ = "posts"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(
+        Integer,
+        primary_key=True,
+        index=True
+    )
 
-    content = Column(Text, nullable=False)
+    content = Column(
+        Text,
+        nullable=False
+    )
 
-    image_url = Column(String, nullable=True)
+    image_url = Column(
+        String,
+        nullable=True
+    )
 
     created_at = Column(
         DateTime(timezone=True),
@@ -138,6 +164,56 @@ class Post(Base):
         "Like",
         back_populates="post",
         cascade="all, delete-orphan"
+    )
+# -------------------------
+# FRIEND REQUEST MODEL
+# -------------------------
+
+class FriendRequest(Base):
+    __tablename__ = "friend_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    sender_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    receiver_id = Column(
+        Integer,
+        ForeignKey("users.id"),
+        nullable=False
+    )
+
+    status = Column(
+    String,
+    nullable=False,
+    default="pending"   # pending | accepted | declined
+    )
+
+    created_at = Column(
+        DateTime,
+        default=datetime.utcnow
+    )
+
+    sender = relationship(
+        "User",
+        foreign_keys=[sender_id],
+        back_populates="sent_requests",
+    )
+
+    receiver = relationship(
+        "User",
+        foreign_keys=[receiver_id],
+        back_populates="received_requests",
+    )
+    __table_args__ = (
+    UniqueConstraint(
+        "sender_id",
+        "receiver_id",
+        name="uq_friend_request"
+    ),
     )
 
 
@@ -273,7 +349,7 @@ class Notification(Base):
 
     sender_id = Column(
         Integer,
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("users.id", ondelete="SET NULL"),
         nullable=True
     )
 

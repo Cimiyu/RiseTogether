@@ -67,8 +67,22 @@ def create_post(
     db.commit()
     db.refresh(new_post)
 
-    return new_post
+    return {
+    "id": new_post.id,
+    "content": new_post.content,
+    "image_url": new_post.image_url,
+    "created_at": new_post.created_at,
 
+    "owner": {
+        "id": current_user.id,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "profile_picture": current_user.profile_picture,
+    },
+
+    "likes_count": 0,
+    "comments_count": 0,
+}
 
 # -------------------------
 # GET ALL POSTS
@@ -76,16 +90,64 @@ def create_post(
 
 @router.get("/", response_model=list[schemas.PostResponse])
 def get_posts(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
+
     posts = (
         db.query(models.Post)
         .order_by(models.Post.created_at.desc())
         .all()
     )
 
-    return posts
+    result = []
 
+    for post in posts:
+
+        likes_count = (
+            db.query(models.Like)
+            .filter(models.Like.post_id == post.id)
+            .count()
+        )
+
+        comments_count = (
+            db.query(models.Comment)
+            .filter(models.Comment.post_id == post.id)
+            .count()
+        )
+
+        result.append({
+
+            "id": post.id,
+
+            "content": post.content,
+
+            "image_url": post.image_url,
+
+            "created_at": post.created_at,
+
+
+            "owner": {
+                "id": post.owner.id,
+                "first_name": post.owner.first_name,
+                "last_name": post.owner.last_name,
+                "profile_picture": post.owner.profile_picture,
+            },
+
+
+            "likes_count": likes_count,
+
+            "comments_count": comments_count,
+
+
+            "liked": any(
+                like.owner_id == current_user.id
+                for like in post.likes
+            )
+        })
+
+
+    return result
 
 # -------------------------
 # GET SINGLE POST
@@ -95,6 +157,7 @@ def get_posts(
 def get_post(
     post_id: int,
     db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
 ):
     post = (
         db.query(models.Post)
@@ -108,9 +171,34 @@ def get_post(
             detail="Post not found."
         )
 
-    return post
+    likes_count = (
+        db.query(models.Like)
+        .filter(models.Like.post_id == post.id)
+        .count()
+    )
 
+    comments_count = (
+        db.query(models.Comment)
+        .filter(models.Comment.post_id == post.id)
+        .count()
+    )
 
+    return {
+        "id": post.id,
+        "content": post.content,
+        "image_url": post.image_url,
+        "created_at": post.created_at,
+
+        "owner": {
+            "id": post.owner.id,
+            "first_name": post.owner.first_name,
+            "last_name": post.owner.last_name,
+            "profile_picture": post.owner.profile_picture,
+        },
+
+        "likes_count": likes_count,
+        "comments_count": comments_count,
+    }
 # -------------------------
 # UPDATE POST
 # -------------------------
@@ -146,7 +234,34 @@ def update_post(
     db.commit()
     db.refresh(post)
 
-    return post
+    likes_count = (
+    db.query(models.Like)
+    .filter(models.Like.post_id == post.id)
+    .count()
+)
+
+    comments_count = (
+    db.query(models.Comment)
+    .filter(models.Comment.post_id == post.id)
+    .count()
+)
+
+    return {
+    "id": post.id,
+    "content": post.content,
+    "image_url": post.image_url,
+    "created_at": post.created_at,
+
+    "owner": {
+        "id": current_user.id,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "profile_picture": current_user.profile_picture,
+    },
+
+    "likes_count": likes_count,
+    "comments_count": comments_count,
+}
 
 
 # -------------------------
@@ -190,26 +305,3 @@ def delete_post(
     return {
         "message": "Post deleted successfully."
     }
-
-# -------------------------
-# GET SINGLE POST
-# -------------------------
-
-@router.get("/{post_id}", response_model=schemas.PostResponse)
-def get_post(
-    post_id: int,
-    db: Session = Depends(get_db),
-):
-    post = (
-        db.query(models.Post)
-        .filter(models.Post.id == post_id)
-        .first()
-    )
-
-    if not post:
-        raise HTTPException(
-            status_code=404,
-            detail="Post not found."
-        )
-
-    return post

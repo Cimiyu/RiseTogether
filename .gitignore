@@ -18,3 +18,14 @@ frontend/node_modules/
 
 # Logs
 *.log
+
+# User uploads and personal images
+backend/uploads/
+
+# Frontend build output
+frontend/dist/
+
+# Environment files
+.env
+.env.*
+!.env.example

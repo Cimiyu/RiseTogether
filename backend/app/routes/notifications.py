@@ -5,15 +5,16 @@ from app.database import get_db
 from app import models, schemas
 from app.auth import get_current_user
 
+
 router = APIRouter(
     prefix="/notifications",
     tags=["Notifications"]
 )
 
 
-# -------------------------
+# =====================================================
 # GET MY NOTIFICATIONS
-# -------------------------
+# =====================================================
 
 @router.get(
     "/",
@@ -37,11 +38,11 @@ def get_notifications(
     return notifications
 
 
-# -------------------------
+# =====================================================
 # GET UNREAD NOTIFICATION COUNT
-# -------------------------
+# =====================================================
 
-@router.get("/unread/count")
+@router.get("/unread-count")
 def get_unread_notification_count(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
@@ -60,9 +61,9 @@ def get_unread_notification_count(
     }
 
 
-# -------------------------
+# =====================================================
 # MARK ALL AS READ
-# -------------------------
+# =====================================================
 
 @router.put("/read-all")
 def mark_all_notifications_read(
@@ -88,9 +89,9 @@ def mark_all_notifications_read(
     }
 
 
-# -------------------------
+# =====================================================
 # MARK ONE AS READ
-# -------------------------
+# =====================================================
 
 @router.put("/{notification_id}/read")
 def mark_notification_read(
@@ -123,9 +124,9 @@ def mark_notification_read(
     }
 
 
-# -------------------------
+# =====================================================
 # DELETE NOTIFICATION
-# -------------------------
+# =====================================================
 
 @router.delete("/{notification_id}")
 def delete_notification(

@@ -1,7 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
@@ -24,23 +29,20 @@ function Login() {
         }
       );
 
-      localStorage.setItem(
-        "access_token",
-        response.data.access_token
-      );
+      // Save token using AuthContext
+      login(response.data.access_token);
 
       setMessage("✅ Login successful!");
 
-      console.log(response.data);
+      navigate("/dashboard");
 
     } catch (error: any) {
-
       console.error(error);
 
       if (error.response) {
-        setMessage(error.response.data.detail);
+        setMessage(error.response.data.detail || "Login failed.");
       } else {
-        setMessage("Unable to connect to server.");
+        setMessage("Unable to connect to the server.");
       }
     }
   };
@@ -50,12 +52,12 @@ function Login() {
       <h1>Login</h1>
 
       <form onSubmit={handleSubmit}>
-
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
 
         <br /><br />
@@ -65,18 +67,15 @@ function Login() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
 
         <br /><br />
 
-        <button type="submit">
-          Login
-        </button>
-
+        <button type="submit">Login</button>
       </form>
 
-      <p>{message}</p>
-
+      {message && <p>{message}</p>}
     </div>
   );
 }
