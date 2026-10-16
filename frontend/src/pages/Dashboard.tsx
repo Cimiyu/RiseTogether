@@ -209,6 +209,9 @@ function Dashboard() {
         const userId = userResponse.data.id;
         const loadedPosts = postsResponse.data;
 
+        console.log("Posts API response:", postsResponse.data);
+        console.log("Number of posts received:", loadedPosts.length);
+
         setCurrentUserId(userId);
         setPosts(loadedPosts);
 
