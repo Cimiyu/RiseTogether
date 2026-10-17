@@ -21,6 +21,8 @@ function MainLayout({ children }: MainLayoutProps) {
   // =====================================================
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
 
   const [unreadNotifications, setUnreadNotifications] =
     useState(0);
@@ -207,6 +209,7 @@ function MainLayout({ children }: MainLayoutProps) {
     return (
       <Link
         to={path}
+        onClick={() => setMobileMenuOpen(false)}
         className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
           isActive
             ? "bg-red-600 text-white shadow-md"
@@ -312,6 +315,19 @@ function MainLayout({ children }: MainLayoutProps) {
 
           <div className="flex items-center gap-2 md:gap-3">
 
+          {/* MOBILE MENU BUTTON */}
+<button
+  type="button"
+  onClick={() => setMobileMenuOpen((open) => !open)}
+  aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+  aria-expanded={mobileMenuOpen}
+  className="lg:hidden flex items-center justify-center w-11 h-11 rounded-full hover:bg-red-700 transition"
+>
+  <span className="text-2xl" aria-hidden="true">
+    {mobileMenuOpen ? "✕" : "☰"}
+  </span>
+</button>
+
             {/* NOTIFICATIONS */}
 
             <Link
@@ -387,6 +403,44 @@ function MainLayout({ children }: MainLayoutProps) {
         </div>
 
       </header>
+
+      {/* MOBILE NAVIGATION MENU */}
+{mobileMenuOpen && (
+  <div className="lg:hidden fixed inset-0 top-[72px] z-40 bg-black/40">
+    <nav
+      aria-label="Mobile navigation"
+      className="bg-white text-gray-800 shadow-xl p-4 space-y-2 max-h-[calc(100vh-72px)] overflow-y-auto"
+    >
+      {menuItem("/dashboard", "🏠", "Home")}
+      {menuItem("/profile", "👤", "Profile")}
+      {menuItem("/search", "🔎", "Search")}
+      {menuItem("/messages", "💬", "Messages")}
+      {menuItem("/friends", "👥", "Friends")}
+      {menuItem(
+        "/friend-requests",
+        "🤝",
+        "Friend Requests",
+        pendingFriendRequests
+      )}
+      {menuItem(
+        "/notifications",
+        "🔔",
+        "Notifications",
+        unreadNotifications
+      )}
+      {menuItem("/settings", "⚙️", "Settings")}
+
+      <button
+        type="button"
+        onClick={logout}
+        className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50"
+      >
+        <span aria-hidden="true">↪</span>
+        <span className="font-medium">Logout</span>
+      </button>
+    </nav>
+  </div>
+)}
 
       {/* =================================================
           MOBILE SEARCH
